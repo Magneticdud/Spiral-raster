@@ -98,10 +98,6 @@ For optimal results:
 
 All credit for the original concept, algorithm, and implementation goes to the creators at VectorBoom. This version has been adapted with an improved user interface and Bilingual (English/Italian) localization.
 
-## 📄 License
-
-MIT License - Feel free to use and modify this tool for your own projects.
-
 ## 🤝 Contributing
 
 Contributions, issues, and feature requests are welcome!
