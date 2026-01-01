@@ -2,6 +2,8 @@
 
 Convert raster images (JPG, PNG, GIF) into beautiful vector spiral patterns using Paper.js.
 
+[Screenshot](screenshot.png)
+
 ## 📋 Overview
 
 This tool transforms bitmap images into unique SVG spiral patterns using three different tracing methods. The application analyzes the brightness values of your image and creates vector spirals that represent the original image in an artistic, abstract way.
@@ -19,6 +21,7 @@ This tool transforms bitmap images into unique SVG spiral patterns using three d
   - Adjustable spiral center position
   - Customizable grid spacing and segment count
   - Angle rotation control
+  - **Bilingual Interface:** Switch instantly between Italian 🇮🇹 and English 🇬🇧
 
 - **Vector Output:**
   - Export as SVG for infinite scalability
@@ -93,7 +96,7 @@ For optimal results:
 
 [Spiral Raster Script Tutorial](https://web.archive.org/web/20200212232401/http://vectorboom.com/load/tutorials/effects/spiral_raster_script/3-1-0-501) by VectorBoom (some squatter stole their domain, now it's not accessible anymore)
 
-All credit for the original concept, algorithm, and implementation goes to the creators at VectorBoom. This version has been adapted with an improved user interface and Italian localization.
+All credit for the original concept, algorithm, and implementation goes to the creators at VectorBoom. This version has been adapted with an improved user interface and Bilingual (English/Italian) localization.
 
 ## 📄 License
 

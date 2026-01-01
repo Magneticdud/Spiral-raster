@@ -220,65 +220,111 @@
                 height: auto !important;
             }
         }
+
+        .lang-switch {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .lang-btn {
+            background: #f0f4ff;
+            border: 1px solid #667eea;
+            color: #667eea;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.2s;
+        }
+
+        .lang-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .lang-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .container {
+            position: relative;
+            /* For absolute positioning of lang switch */
+        }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <h1>🎨 Spiral Raster</h1>
-        <p class="subtitle">Convertitore Immagine Raster → Spirale SVG</p>
+        <div class="lang-switch">
+            <button onclick="changeLanguage('it')" class="lang-btn active" id="btn-it">IT</button>
+            <button onclick="changeLanguage('en')" class="lang-btn" id="btn-en">EN</button>
+        </div>
+
+        <h1 data-i18n="title">🎨 Spiral Raster</h1>
+        <p class="subtitle" data-i18n="subtitle">Convertitore Immagine Raster → Spirale SVG</p>
 
         <div class="info-box">
-            <h3>📋 Informazioni</h3>
-            <p>Questo strumento converte immagini raster (JPG, PNG, GIF) in spirali vettoriali SVG utilizzando Paper.js.
+            <h3 data-i18n="infoTitle">📋 Informazioni</h3>
+            <p data-i18n="infoText">Questo strumento converte immagini raster (JPG, PNG, GIF) in spirali vettoriali SVG
+                utilizzando Paper.js.
                 Scegli tra tre metodi di tracciamento e controlla i parametri della griglia base per ottenere effetti
                 unici.</p>
         </div>
 
         <div class="canvas-container">
             <canvas id="canvas" width="600" height="600"></canvas>
-            <p class="drop-hint">⬆️ Trascina qui la tua immagine</p>
+            <p class="drop-hint" data-i18n="dropHint">⬆️ Trascina qui la tua immagine</p>
         </div>
 
         <div class="controls">
             <div class="control-group">
-                <h3>Metodo di Tracciamento</h3>
+                <h3 data-i18n="methodTitle">Metodo di Tracciamento</h3>
                 <div class="radio-group">
                     <div class="radio-option">
                         <input type="radio" id="spirtype0" name="spirtype" value="0">
-                        <label for="spirtype0">Spirale Rotonda</label>
+                        <label for="spirtype0" data-i18n="methodRound">Spirale Rotonda</label>
                     </div>
                     <div class="radio-option">
                         <input type="radio" id="spirtype1" name="spirtype" value="1" checked>
-                        <label for="spirtype1">Spirale Quadrata</label>
+                        <label for="spirtype1" data-i18n="methodSquare">Spirale Quadrata</label>
                     </div>
                     <div class="radio-option">
                         <input type="radio" id="spirtype2" name="spirtype" value="2">
-                        <label for="spirtype2">Linee Parallele</label>
+                        <label for="spirtype2" data-i18n="methodLines">Linee Parallele</label>
                     </div>
                 </div>
             </div>
 
             <div class="button-group">
-                <button id="tracebutton" style="display:none;">Traccia Immagine</button>
-                <button id="svgexpbutton" style="display:none;">⬇️ Scarica SVG</button>
+                <button id="tracebutton" style="display:none;" data-state="idle">Traccia Immagine</button>
+                <button id="svgexpbutton" style="display:none;" data-i18n="btnDownload">⬇️ Scarica SVG</button>
             </div>
         </div>
 
         <div class="instructions">
-            <h3>📖 Istruzioni d'uso</h3>
+            <h3 data-i18n="instrTitle">📖 Istruzioni d'uso</h3>
             <ol>
-                <li><strong>Carica un'immagine:</strong> Trascina e rilascia un'immagine JPG, PNG o GIF nell'area canvas
+                <li data-i18n="instr1"><strong>Carica un'immagine:</strong> Trascina e rilascia un'immagine JPG, PNG o
+                    GIF nell'area canvas
                     sopra</li>
-                <li><strong>Scegli il metodo:</strong> Seleziona uno dei tre metodi di tracciamento (spirale rotonda,
+                <li data-i18n="instr2"><strong>Scegli il metodo:</strong> Seleziona uno dei tre metodi di tracciamento
+                    (spirale rotonda,
                     quadrata o linee parallele)</li>
-                <li><strong>Regola i parametri:</strong> Usa i marcatori arancioni per modificare posizione, spaziatura,
+                <li data-i18n="instr3"><strong>Regola i parametri:</strong> Usa i marcatori arancioni per modificare
+                    posizione, spaziatura,
                     numero di segmenti e angolazione della griglia</li>
-                <li><strong>Traccia:</strong> Clicca sul pulsante "Traccia Immagine" per generare la spirale vettoriale
+                <li data-i18n="instr4"><strong>Traccia:</strong> Clicca sul pulsante "Traccia Immagine" per generare la
+                    spirale vettoriale
                 </li>
-                <li><strong>Scarica:</strong> Se soddisfatto del risultato, clicca "Scarica SVG" per salvare il file
+                <li data-i18n="instr5"><strong>Scarica:</strong> Se soddisfatto del risultato, clicca "Scarica SVG" per
+                    salvare il file
                 </li>
-                <li><strong>Modifica:</strong> Apri il file SVG in Adobe Illustrator o altri editor vettoriali per
+                <li data-i18n="instr6"><strong>Modifica:</strong> Apri il file SVG in Adobe Illustrator o altri editor
+                    vettoriali per
                     ulteriori modifiche</li>
             </ol>
         </div>
@@ -291,6 +337,94 @@
 
     <img id="filedrop" style="display: none;"
         src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==">
+
+    <script>
+        window.translations = {
+            it: {
+                pageTitle: "Spiral Raster - Convertitore Immagine a Spirale SVG",
+                metaDesc: "Converti immagini raster in spirali vettoriali SVG con tre metodi di tracciamento diversi.",
+                title: "🎨 Spiral Raster",
+                subtitle: "Convertitore Immagine Raster → Spirale SVG",
+                infoTitle: "📋 Informazioni",
+                infoText: "Questo strumento converte immagini raster (JPG, PNG, GIF) in spirali vettoriali SVG utilizzando Paper.js. Scegli tra tre metodi di tracciamento e controlla i parametri della griglia base per ottenere effetti unici.",
+                dropHint: "⬆️ Trascina qui la tua immagine",
+                methodTitle: "Metodo di Tracciamento",
+                methodRound: "Spirale Rotonda",
+                methodSquare: "Spirale Quadrata",
+                methodLines: "Linee Parallele",
+                btnTrace: "Traccia Immagine",
+                btnCancel: "Annulla",
+                btnDownload: "⬇️ Scarica SVG",
+                instrTitle: "📖 Istruzioni d'uso",
+                instr1: "<strong>Carica un'immagine:</strong> Trascina e rilascia un'immagine JPG, PNG o GIF nell'area canvas sopra",
+                instr2: "<strong>Scegli il metodo:</strong> Seleziona uno dei tre metodi di tracciamento (spirale rotonda, quadrata o linee parallele)",
+                instr3: "<strong>Regola i parametri:</strong> Usa i marcatori arancioni per modificare posizione, spaziatura, numero di segmenti e angolazione della griglia",
+                instr4: "<strong>Traccia:</strong> Clicca sul pulsante \"Traccia Immagine\" per generare la spirale vettoriale",
+                instr5: "<strong>Scarica:</strong> Se soddisfatto del risultato, clicca \"Scarica SVG\" per salvare il file",
+                instr6: "<strong>Modifica:</strong> Apri il file SVG in Adobe Illustrator o altri editor vettoriali per ulteriori modifiche"
+            },
+            en: {
+                pageTitle: "Spiral Raster - Raster Image to SVG Spiral Converter",
+                metaDesc: "Convert raster images to SVG vector spirals with three different tracing methods.",
+                title: "🎨 Spiral Raster",
+                subtitle: "Raster Image Converter → SVG Spiral",
+                infoTitle: "📋 Information",
+                infoText: "This tool converts raster images (JPG, PNG, GIF) into SVG vector spirals using Paper.js. Choose from three tracing methods and control the base grid parameters to achieve unique effects.",
+                dropHint: "⬆️ Drop your image here",
+                methodTitle: "Tracing Method",
+                methodRound: "Round Spiral",
+                methodSquare: "Square Spiral",
+                methodLines: "Parallel Lines",
+                btnTrace: "Trace Image",
+                btnCancel: "Cancel",
+                btnDownload: "⬇️ Download SVG",
+                instrTitle: "📖 User Instructions",
+                instr1: "<strong>Upload an image:</strong> Drag and drop a JPG, PNG, or GIF image into the canvas area above",
+                instr2: "<strong>Choose method:</strong> Select one of the three tracing methods (round spiral, square spiral, or parallel lines)",
+                instr3: "<strong>Adjust parameters:</strong> Use the orange markers to modify position, spacing, number of segments, and grid angle",
+                instr4: "<strong>Trace:</strong> Click the \"Trace Image\" button to generate the vector spiral",
+                instr5: "<strong>Download:</strong> If satisfied with the result, click \"Download SVG\" to save the file",
+                instr6: "<strong>Edit:</strong> Open the SVG file in Adobe Illustrator or other vector editors for further modifications"
+            }
+        };
+
+        window.currentLang = 'it';
+
+        window.changeLanguage = function (lang) {
+            window.currentLang = lang;
+            document.documentElement.lang = lang;
+
+            // Update buttons
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('btn-' + lang).classList.add('active');
+
+            // Update title and meta
+            if (window.translations[lang].pageTitle) {
+                document.title = window.translations[lang].pageTitle;
+            }
+            if (window.translations[lang].metaDesc) {
+                const metaDesc = document.querySelector('meta[name="description"]');
+                if (metaDesc) metaDesc.content = window.translations[lang].metaDesc;
+            }
+
+            // Update text content
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (window.translations[lang][key]) {
+                    el.innerHTML = window.translations[lang][key];
+                }
+            });
+
+            // Update trace button specifically because it changes state
+            const traceBtn = document.getElementById('tracebutton');
+            const state = traceBtn.dataset.state || 'idle';
+            if (state === 'tracing') {
+                traceBtn.textContent = window.translations[lang].btnCancel;
+            } else {
+                traceBtn.textContent = window.translations[lang].btnTrace;
+            }
+        };
+    </script>
 
     <script type="text/paperscript" canvas="canvas">
     var sqrt2 = Math.sqrt(2);
@@ -1323,7 +1457,8 @@
             createLines();
 
             document.getElementById("svgexpbutton").style.display="none";
-            document.getElementById("tracebutton").textContent = 'Traccia Immagine';
+            document.getElementById("tracebutton").textContent = window.translations[window.currentLang].btnTrace;
+            document.getElementById("tracebutton").dataset.state = 'idle';
         }
         else
         {
@@ -1333,7 +1468,8 @@
             layerAnchors.visible = false;
             
             document.getElementById("svgexpbutton").style.display="inline";
-            document.getElementById("tracebutton").textContent = 'Annulla';
+            document.getElementById("tracebutton").textContent = window.translations[window.currentLang].btnCancel;
+            document.getElementById("tracebutton").dataset.state = 'tracing';
         }
         
     }
