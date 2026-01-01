@@ -2,7 +2,7 @@
 
 Convert raster images (JPG, PNG, GIF) into beautiful vector spiral patterns using Paper.js.
 
-[Screenshot](screenshot.png)
+![Screenshot](screenshot.png)
 
 ## 📋 Overview
 
