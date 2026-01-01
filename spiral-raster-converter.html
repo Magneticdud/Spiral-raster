@@ -1,0 +1,1443 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spiral Raster - Convertitore Immagine a Spirale SVG</title>
+    <meta name="description"
+        content="Converti immagini raster in spirali vettoriali SVG con tre metodi di tracciamento diversi.">
+    <script type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.12.17/paper-full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .info-box {
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 5px;
+        }
+
+        .info-box h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .info-box p {
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .canvas-container {
+            text-align: center;
+            margin: 25px 0;
+        }
+
+        #canvas {
+            border: 3px dashed #667eea;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        #canvas:hover {
+            border-color: #764ba2;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        .control-group {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .control-group h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .radio-option:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .radio-option input[type="radio"] {
+            cursor: pointer;
+        }
+
+        .radio-option input[type="radio"]:checked+label {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 30px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        #tracebutton {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        #tracebutton:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        #svgexpbutton {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        #svgexpbutton:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 87, 108, 0.4);
+        }
+
+        .instructions {
+            background: #fff9e6;
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            margin-top: 30px;
+            border-radius: 5px;
+        }
+
+        .instructions h3 {
+            color: #f57c00;
+            margin-bottom: 15px;
+        }
+
+        .instructions ol {
+            margin-left: 20px;
+            color: #555;
+            line-height: 1.8;
+        }
+
+        .instructions li {
+            margin-bottom: 10px;
+        }
+
+        .drop-hint {
+            text-align: center;
+            color: #667eea;
+            font-weight: 600;
+            margin-top: 10px;
+            font-size: 1.1em;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            #canvas {
+                width: 100% !important;
+                height: auto !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🎨 Spiral Raster</h1>
+        <p class="subtitle">Convertitore Immagine Raster → Spirale SVG</p>
+
+        <div class="info-box">
+            <h3>📋 Informazioni</h3>
+            <p>Questo strumento converte immagini raster (JPG, PNG, GIF) in spirali vettoriali SVG utilizzando Paper.js.
+                Scegli tra tre metodi di tracciamento e controlla i parametri della griglia base per ottenere effetti
+                unici.</p>
+        </div>
+
+        <div class="canvas-container">
+            <canvas id="canvas" width="600" height="600"></canvas>
+            <p class="drop-hint">⬆️ Trascina qui la tua immagine</p>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <h3>Metodo di Tracciamento</h3>
+                <div class="radio-group">
+                    <div class="radio-option">
+                        <input type="radio" id="spirtype0" name="spirtype" value="0">
+                        <label for="spirtype0">Spirale Rotonda</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="spirtype1" name="spirtype" value="1" checked>
+                        <label for="spirtype1">Spirale Quadrata</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="spirtype2" name="spirtype" value="2">
+                        <label for="spirtype2">Linee Parallele</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button id="tracebutton" style="display:none;">Traccia Immagine</button>
+                <button id="svgexpbutton" style="display:none;">⬇️ Scarica SVG</button>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h3>📖 Istruzioni d'uso</h3>
+            <ol>
+                <li><strong>Carica un'immagine:</strong> Trascina e rilascia un'immagine JPG, PNG o GIF nell'area canvas
+                    sopra</li>
+                <li><strong>Scegli il metodo:</strong> Seleziona uno dei tre metodi di tracciamento (spirale rotonda,
+                    quadrata o linee parallele)</li>
+                <li><strong>Regola i parametri:</strong> Usa i marcatori arancioni per modificare posizione, spaziatura,
+                    numero di segmenti e angolazione della griglia</li>
+                <li><strong>Traccia:</strong> Clicca sul pulsante "Traccia Immagine" per generare la spirale vettoriale
+                </li>
+                <li><strong>Scarica:</strong> Se soddisfatto del risultato, clicca "Scarica SVG" per salvare il file
+                </li>
+                <li><strong>Modifica:</strong> Apri il file SVG in Adobe Illustrator o altri editor vettoriali per
+                    ulteriori modifiche</li>
+            </ol>
+        </div>
+    </div>
+
+    <form id="svgexpform" method="post" action="data:text/html," style="display:none">
+        <input name="filename" value="export.svg" type="hidden">
+        <input id="svgexpdata" name="data" value="" type="hidden">
+    </form>
+
+    <img id="filedrop" style="display: none;"
+        src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==">
+
+    <script type="text/paperscript" canvas="canvas">
+    var sqrt2 = Math.sqrt(2);
+    
+    document.getElementById("tracebutton").style.display="none";
+    document.getElementById("svgexpbutton").style.display="none";
+    
+    var gSpirType = 1;
+    
+    var rectRaster = null;
+    var raster = new Raster('filedrop');
+    raster.position = view.center;
+
+    rectRaster = new Path.Rectangle(raster.bounds);
+    rectRaster.fillColor = '#E0E0E0';
+    rectRaster.sendToBack();
+    
+    var itemBorder = new Path.Rectangle(view.bounds);
+    itemBorder.strokeColor = 'black';
+
+    var ptSpirCenter = view.center;
+    var ptSpirEnd = ptSpirCenter + new Point({angle:45, length: view.bounds.bottom/2-10});
+    var ptSpirStep = ptSpirCenter + new Point({angle:(ptSpirEnd-ptSpirCenter).angle, length: 40});
+    var gAngle = 8.;
+    var ptSpirAngle = ptSpirCenter + new Point({angle:(ptSpirEnd-ptSpirCenter).angle-gAngle, length:(ptSpirEnd-ptSpirCenter).length});
+    var ptSpirSubStep = ptSpirEnd + new Point({angle:(ptSpirEnd-ptSpirCenter).angle-90-45, length:30});
+    
+    var ptPLHalfWidth = ptSpirCenter + new Point({angle:0, length: view.bounds.bottom/2-20});
+    var ptPLHalfHeight = ptSpirCenter + new Point({angle:-90, length: view.bounds.bottom/2-50});
+    var ptPLStep = ptSpirCenter + new Point({angle:-90, length:40});
+    var ptPLSubStep = ptPLHalfHeight + new Point({angle:0, length:30});
+
+    var anchSpirCenter = new Path.Circle(ptSpirCenter, 4);
+    var anchSpirEnd = new Path.Circle(ptSpirEnd, 4);
+    var anchSpirStep = new Path.Circle(ptSpirStep, 4);
+    var anchSpirAngle = new Path.Circle(ptSpirAngle, 4);
+    var anchSpirSubStep = new Path.Circle(ptSpirSubStep, 4);
+    
+    var anchPLHalfWidth = new Path.Circle(ptPLHalfWidth, 4);
+    var anchPLHalfHeight = new Path.Circle(ptPLHalfHeight, 4);
+    var anchPLStep = new Path.Circle(ptPLStep, 4);
+    var anchPLSubStep = new Path.Circle(ptPLSubStep, 4); 
+    
+    var grSpir = null;
+    var grLines = null;
+    var grSpirTrace = null;
+    
+    var layerBG = new Layer([itemBorder, rectRaster, raster]);
+    var layerAnchors = new Layer([anchPLSubStep, anchPLStep, anchPLHalfHeight, anchPLHalfWidth, anchSpirSubStep, anchSpirAngle, anchSpirStep, anchSpirEnd, anchSpirCenter]);
+    var layerTrace = null;
+
+    layerAnchors.fillColor = 'orange';
+    layerAnchors.strokeWidth = 2; 
+
+    visAnchors();
+    createSpir();
+    createLines();
+    
+    var dragItem = null;
+    
+    function onMouseMove(event)
+    {
+        layerAnchors.strokeColor = null;
+        
+        if(!dragItem && event.item!=null && event.item.layer == layerAnchors)
+        {
+            event.item.strokeColor = 'red';
+        }
+
+        if(dragItem)
+        {
+            dragItem.strokeColor = 'green';
+
+            if(dragItem == anchSpirCenter)
+            {
+                var deltaPtSpirEnd = ptSpirCenter - ptSpirEnd;
+                var deltaPtSpirStep = ptSpirCenter - ptSpirStep;
+                var deltaPtSpirAngle = ptSpirCenter - ptSpirAngle;
+                var deltaPtSpirSubStep = ptSpirCenter - ptSpirSubStep;
+                
+                var deltaPtPLHalfWidth = ptSpirCenter - ptPLHalfWidth;
+                var deltaPtPLHalfHeight = ptSpirCenter - ptPLHalfHeight;
+                var deltaPtPLStep = ptSpirCenter - ptPLStep;
+                var deltaPtPLSubStep = ptSpirCenter - ptPLSubStep;
+                
+                var deltaSpir = ptSpirCenter - grSpir.position;
+                var deltaLines = ptSpirCenter - grLines.position;
+
+                ptSpirCenter = event.point;
+
+                if(ptSpirCenter.x > view.bounds.right-5)
+                    ptSpirCenter.x = view.bounds.right-5;
+                if(ptSpirCenter.y > view.bounds.bottom-5)
+                    ptSpirCenter.y = view.bounds.bottom-5;
+                if(ptSpirCenter.x < view.bounds.left+5)
+                    ptSpirCenter.x = view.bounds.left+5;
+                if(ptSpirCenter.y < view.bounds.top+5)
+                    ptSpirCenter.y = view.bounds.top+5; 
+
+                ptSpirEnd = ptSpirCenter - deltaPtSpirEnd;
+                ptSpirStep = ptSpirCenter - deltaPtSpirStep;
+                ptSpirAngle = ptSpirCenter - deltaPtSpirAngle;
+                ptSpirSubStep = ptSpirCenter - deltaPtSpirSubStep;
+                
+                ptPLHalfWidth = ptSpirCenter - deltaPtPLHalfWidth;
+                ptPLHalfHeight = ptSpirCenter - deltaPtPLHalfHeight;
+                ptPLStep = ptSpirCenter - deltaPtPLStep;
+                ptPLSubStep = ptSpirCenter - deltaPtPLSubStep; 
+                
+                grSpir.position = ptSpirCenter - deltaSpir;
+                grLines.position = ptSpirCenter - deltaLines;
+            }
+
+            if(dragItem == anchSpirEnd)
+            {
+                var spirStep = (ptSpirCenter - ptSpirStep).length;
+                var subStep = (ptSpirEnd - ptSpirSubStep).length;
+                
+                var plHalfW = (ptPLHalfWidth - ptSpirCenter).length;
+                var plHalfH = (ptPLHalfHeight - ptSpirCenter).length;
+                var plStep = (ptPLStep - ptSpirCenter).length;
+                var plSubStep = (ptPLSubStep - ptPLHalfHeight).length;
+                
+                ptSpirEnd = event.point;
+
+                if(ptSpirEnd.x > view.bounds.right-5)
+                    ptSpirEnd.x = view.bounds.right-5;
+                if(ptSpirEnd.y > view.bounds.bottom-5)
+                    ptSpirEnd.y = view.bounds.bottom-5;
+                if(ptSpirEnd.x < view.bounds.left+5)
+                    ptSpirEnd.x = view.bounds.left+5;
+                if(ptSpirEnd.y < view.bounds.top+5)
+                    ptSpirEnd.y = view.bounds.top+5;
+
+                var currAngle = (ptSpirEnd-ptSpirCenter).angle;
+                var currLength = (ptSpirEnd-ptSpirCenter).length;
+                currAngle = Math.round(currAngle/5.)*5;
+                if(currLength < spirStep + 10)
+                {
+                    currLength = spirStep + 10;
+                }
+                ptSpirEnd = ptSpirCenter + new Point({angle: currAngle, length: currLength});
+                
+                
+                ptSpirStep = ptSpirCenter + new Point({angle: currAngle, length:spirStep});
+                
+                ptSpirAngle = ptSpirCenter + new Point({angle:currAngle-gAngle, length:currLength});
+                
+                var sideSize = currLength * sqrt2;
+                if(subStep > sideSize)
+                    subStep = sideSize;
+                
+                ptSpirSubStep = ptSpirEnd + new Point({angle:currAngle-90-45, length:subStep});
+                
+                ptPLHalfWidth = ptSpirCenter + new Point({angle:currAngle-45, length:plHalfW});
+                ptPLHalfHeight = ptSpirCenter + new Point({angle:currAngle-45-90, length:plHalfH});
+                ptPLStep = ptSpirCenter + new Point({angle:currAngle-45-90, length:plStep});
+                ptPLSubStep = ptPLHalfHeight + new Point({angle:currAngle-45, length:plSubStep});
+                
+                grLines.visible = false;
+                createSpir();
+            }
+            
+            if(dragItem == anchSpirStep)
+            {
+                ptSpirStep = event.point;
+                
+                var deltaPtSpirEnd = ptSpirCenter - ptSpirEnd;
+                var deltaPtSpirStep = ptSpirCenter - ptSpirStep;
+                
+                var iLength = deltaPtSpirStep.length;
+                
+                if(iLength < 20)
+                    iLength = 20;
+                
+                if(iLength > deltaPtSpirEnd.length-10)
+                    iLength = deltaPtSpirEnd.length-10;
+                
+                ptSpirStep = ptSpirCenter - new Point({angle: deltaPtSpirEnd.angle, length:iLength});
+                
+                createSpir();
+            }
+
+            if(dragItem == anchSpirAngle)
+            {
+                ptSpirAngle = event.point;
+                
+                var currAngle = (ptSpirEnd-ptSpirCenter).angle - (ptSpirAngle-ptSpirCenter).angle;
+                
+                if(currAngle > 180)
+                    currAngle -= 360;
+                
+                if(currAngle < -180)
+                    currAngle += 360;
+                
+                if(currAngle < 0) currAngle = 0;
+                if(currAngle > 20) currAngle = 20;
+                
+                gAngle = currAngle;
+                
+                if(gAngle < 3)gAngle = 3;
+                gAngle = 360./Math.floor(360./gAngle);
+                
+                ptSpirAngle = ptSpirAngle = ptSpirCenter + new Point({angle: (ptSpirEnd-ptSpirCenter).angle-currAngle, length:(ptSpirEnd-ptSpirCenter).length});
+                
+                createLines();
+            }
+            
+            if(dragItem == anchSpirSubStep)
+            {
+                ptSpirSubStep = event.point;
+                
+                var subStep = (ptSpirEnd - ptSpirSubStep).length;
+                
+                if(subStep < 10)
+                    subStep = 10;
+                
+                var sideSize = sqrt2*(ptSpirEnd-ptSpirCenter).length;
+                
+                if(subStep > sideSize)
+                    subStep = sideSize;
+                
+                if(subStep > 100)
+                    subStep = 100;
+                
+                ptSpirSubStep = ptSpirEnd + new Point({angle:(ptSpirEnd-ptSpirCenter).angle-90-45, length:subStep});
+
+                createLines();
+            }
+            
+            if(dragItem == anchPLHalfWidth)
+            {
+                var spirEnd = (ptSpirCenter - ptSpirEnd).length;
+                var spirStep = (ptSpirCenter - ptSpirStep).length;
+                var spirSubStep = (ptSpirEnd - ptSpirSubStep).length;
+                
+                var plHalfH = (ptPLHalfHeight - ptSpirCenter).length;
+                var plStep = (ptPLStep - ptSpirCenter).length;
+                var plSubStep = (ptPLSubStep - ptPLHalfHeight).length;
+                
+                ptPLHalfWidth = event.point;
+
+                if(ptPLHalfWidth.x > view.bounds.right-5)
+                    ptPLHalfWidth.x = view.bounds.right-5;
+                if(ptPLHalfWidth.y > view.bounds.bottom-5)
+                    ptPLHalfWidth.y = view.bounds.bottom-5;
+                if(ptPLHalfWidth.x < view.bounds.left+5)
+                    ptPLHalfWidth.x = view.bounds.left+5;
+                if(ptPLHalfWidth.y < view.bounds.top+5)
+                    ptPLHalfWidth.y = view.bounds.top+5;
+                
+                var currAngle = (ptPLHalfWidth-ptSpirCenter).angle;
+                var currLength = (ptPLHalfWidth-ptSpirCenter).length;
+                currAngle = Math.round(currAngle/5.)*5;
+                if(currLength < 40)
+                {
+                    currLength = 40;
+                }
+                ptPLHalfWidth = ptSpirCenter + new Point({angle: currAngle, length: currLength});
+                
+                if(plSubStep > currLength)
+                    plSubStep = currLength;
+                
+                ptPLHalfHeight = ptSpirCenter + new Point({angle:currAngle-90, length:plHalfH});
+                ptPLStep = ptSpirCenter + new Point({angle:currAngle-90, length:plStep});
+                ptPLSubStep = ptPLHalfHeight + new Point({angle:currAngle, length:plSubStep});
+                
+                ptSpirEnd = ptSpirCenter + new Point({angle:currAngle+45, length:spirEnd});
+                ptSpirAngle = ptSpirCenter + new Point({angle:currAngle+45-gAngle, length:spirEnd});
+                ptSpirStep = ptSpirCenter + new Point({angle:currAngle+45, length:spirStep});
+                ptSpirSubStep = ptSpirEnd + new Point({angle:currAngle-90, length:spirSubStep});
+                
+                grLines.visible = false;
+                createSpir();
+            }
+            
+            if(dragItem == anchPLHalfHeight)
+            {
+                var spirEnd = (ptSpirCenter - ptSpirEnd).length;
+                var spirStep = (ptSpirCenter - ptSpirStep).length;
+                var spirSubStep = (ptSpirEnd - ptSpirSubStep).length;
+                
+                var plHalfW = (ptPLHalfWidth - ptSpirCenter).length;
+                var plStep = (ptPLStep - ptSpirCenter).length;
+                var plSubStep = (ptPLSubStep - ptPLHalfHeight).length;
+                
+                ptPLHalfHeight = event.point;
+
+                if(ptPLHalfHeight.x > view.bounds.right-5)
+                    ptPLHalfHeight.x = view.bounds.right-5;
+                if(ptPLHalfHeight.y > view.bounds.bottom-5)
+                    ptPLHalfHeight.y = view.bounds.bottom-5;
+                if(ptPLHalfHeight.x < view.bounds.left+5)
+                    ptPLHalfHeight.x = view.bounds.left+5;
+                if(ptPLHalfHeight.y < view.bounds.top+5)
+                    ptPLHalfHeight.y = view.bounds.top+5;
+                
+                var currAngle = (ptPLHalfHeight-ptSpirCenter).angle;
+                var currLength = (ptPLHalfHeight-ptSpirCenter).length;
+                currAngle = Math.round(currAngle/5.)*5;
+                if(currLength < plStep+10)
+                {
+                    currLength = plStep + 10;
+                }
+                ptPLHalfHeight = ptSpirCenter + new Point({angle: currAngle, length: currLength});
+                
+                ptPLHalfWidth = ptSpirCenter + new Point({angle:currAngle+90, length:plHalfW});
+                ptPLStep = ptSpirCenter + new Point({angle:currAngle, length:plStep});
+                ptPLSubStep = ptPLHalfHeight + new Point({angle:currAngle+90, length:plSubStep});
+                
+                ptSpirEnd = ptSpirCenter + new Point({angle:currAngle+90+45, length:spirEnd});
+                ptSpirAngle = ptSpirCenter + new Point({angle:currAngle+90+45-gAngle, length:spirEnd});
+                ptSpirStep = ptSpirCenter + new Point({angle:currAngle+90+45, length:spirStep});
+                ptSpirSubStep = ptSpirEnd + new Point({angle:currAngle, length:spirSubStep});
+                
+                grLines.visible = false;
+                createSpir(); 
+            }
+            
+            if(dragItem == anchPLStep)
+            {
+                var plHalfH = (ptPLHalfHeight - ptSpirCenter).length;
+                var fixAngle = (ptPLHalfHeight - ptSpirCenter).angle;
+                
+                ptPLStep = event.point;
+                
+                var currLength = (ptPLStep-ptSpirCenter).length;
+                if(currLength<20)
+                    currLength = 20;
+                
+                if(currLength>plHalfH-10)
+                    currLength=plHalfH-10;
+                
+                ptPLStep = ptSpirCenter + new Point({angle: fixAngle, length: currLength});
+                
+                
+                createSpir();
+            }
+            
+            if(dragItem == anchPLSubStep)
+            {
+                var plHalfW = (ptPLHalfWidth - ptSpirCenter).length;
+                var fixAngle = (ptPLHalfWidth - ptSpirCenter).angle;
+                
+                ptPLSubStep = event.point;
+                
+                var currLength = (ptPLHalfHeight - ptPLSubStep).length;
+                
+                if(currLength < 20)
+                    currLength = 20;
+                
+                if(currLength > plHalfW)
+                    currLength = plHalfW;
+                
+                if(currLength > 100)
+                    currLength = 100;
+                
+                ptPLSubStep = ptPLHalfHeight + new Point({angle: fixAngle, length: currLength});
+                
+                createLines();
+            } 
+            
+            anchSpirCenter.position = ptSpirCenter;
+            anchSpirEnd.position = ptSpirEnd; 
+            anchSpirStep.position = ptSpirStep;
+            anchSpirAngle.position = ptSpirAngle;
+            anchSpirSubStep.position = ptSpirSubStep;
+            
+            anchPLHalfWidth.position = ptPLHalfWidth;
+            anchPLHalfHeight.position = ptPLHalfHeight;
+            anchPLStep.position = ptPLStep;
+            anchPLSubStep.position = ptPLSubStep;
+        }
+    }
+
+    function onMouseDown(event)
+    {
+        if(event.item!=null && event.item.layer == layerAnchors)
+        {
+            raster.visible = false;
+            rectRaster.visible = true;
+            dragItem = event.item;
+        }
+    }
+    
+    function onMouseUp(event)
+    {
+        if(dragItem)
+        {
+            raster.visible = true;
+            rectRaster.visible = false;
+            ptSpirAngle = ptSpirCenter + new Point({angle:(ptSpirEnd-ptSpirCenter).angle-gAngle, length:(ptSpirEnd-ptSpirCenter).length});
+            anchSpirAngle.position = ptSpirAngle;
+
+            createSpir();
+            createLines();
+        }
+        dragItem = null;
+    } 
+    
+    function traceSpir()
+    {
+        layerBG.activate();
+        
+        if(gSpirType==0)
+        {
+            traceRoundSpir();
+        }
+        
+        if(gSpirType==1)
+        {
+            traceRectSpir();
+        }
+        
+        if(gSpirType==2)
+        {
+            tracePL();
+        } 
+        
+        layerTrace = new Layer([grSpirTrace]);
+    }
+    
+    function traceRoundSpir()
+    { 
+        if(grSpirTrace)grSpirTrace.remove();
+        
+        grSpirTrace = new Group();
+        
+        var itemSpirTrace1 = new Path();
+        var itemSpirTrace2 = new Path();
+        
+        var iLength = (ptSpirCenter - ptSpirStep).length / 5.; 
+        
+        var delta = ptSpirEnd - ptSpirCenter;
+        
+        var iN = Math.round(delta.length/iLength);
+        
+        var maxWidth = (delta.length*0.9)/(iN);
+        
+        var ptLast = ptSpirCenter;
+        itemSpirTrace1.add(ptSpirCenter);
+        itemSpirTrace2.add(ptSpirCenter);
+        
+        var iAngles = 360./gAngle
+        
+        for(var i=1; i<iN*iAngles+1; i++)
+        { 
+            var vector = new Point({
+                angle: i*gAngle + delta.angle,
+                length: (i*delta.length)/(iAngles*iN)
+            });
+            
+            var ptNew = ptSpirCenter+vector;
+            
+            var color = raster.getAverageColor(ptNew);
+            var value = color ? (1 - color.gray) : 0;
+            var offset = Math.max(value, 0.1);
+            
+            var rot = ptLast - ptNew;
+            rot = rot.rotate(90);
+            rot.length = maxWidth/2 * offset;
+            
+            itemSpirTrace1.add(ptNew - rot);
+            itemSpirTrace2.add(ptNew + rot);
+            
+            ptLast = ptNew;
+        }
+        
+        itemSpirTrace1.smooth();
+        itemSpirTrace2.smooth();
+        
+        itemSpirTrace2.reverse();
+        
+        itemSpirTrace1.join(itemSpirTrace2);
+        
+        itemSpirTrace1.closed = true;
+        
+        itemSpirTrace1.fillColor = 'black';
+        
+        var maxSeg = 32000;
+        
+        while(itemSpirTrace1.segments.length > maxSeg)
+        {
+            itemSpirTrace1.split(maxSeg/2-1, 0);
+            var newPath = itemSpirTrace1.split(itemSpirTrace1.segments.length-maxSeg, 0);
+            
+            itemSpirTrace1.firstSegment.handleIn = null;
+            itemSpirTrace1.lastSegment.handleOut = null;
+            
+            newPath.firstSegment.handleIn = null;
+            newPath.lastSegment.handleOut = null; 
+            
+            itemSpirTrace1.closed = true;
+            
+            newPath.closed = true;
+            
+            grSpirTrace.addChild(newPath);
+        }
+
+        grSpirTrace.addChild(itemSpirTrace1);
+    }
+    
+    function traceRectSpir()
+    {
+        if(grSpirTrace)grSpirTrace.remove();
+        
+        grSpirTrace = new Group();
+        
+        var itemSpirTrace = new Path();
+        itemSpirTrace.fillColor = 'black';
+        
+        var iLength = (ptSpirCenter - ptSpirStep).length / (sqrt2 * 5.);
+        
+        var delta = ptSpirEnd - ptSpirCenter;
+        
+        var iN = Math.round(delta.length/sqrt2/iLength);
+        
+        var subStepLength = (ptSpirEnd - ptSpirSubStep).length / 5.;
+        if(subStepLength<(delta.length/(sqrt2*iN*2)))
+            subStepLength = delta.length/(sqrt2*iN*2); 
+        
+        var maxWidth = (delta.length*0.9)/(sqrt2*iN);
+        
+        var aPath1 = new Array();
+        var aPath2 = new Array();
+        
+        var path1 = new Path();
+        var path2 = new Path();
+        
+        var prevPoint = ptSpirCenter;
+        
+        {
+            var first_angle = 90 + delta.angle-45;
+            
+            var color = raster.getAverageColor(prevPoint);
+            var value = color ? (1 - color.gray) : 0;
+            var offset = Math.max(value, 0.1);
+            
+            var offsetVector = new Point({
+                angle: first_angle+180,
+                length: (maxWidth/2 * offset)
+            });
+            
+            path1.add(prevPoint-offsetVector);
+            path2.add(prevPoint+offsetVector);
+        }
+        
+        for(var i=1; i<iN*4+1; i++)
+        { 
+            var vector = new Point({
+                angle: i*90+90 + delta.angle-45,
+                length: i*delta.length/(sqrt2*2.*iN)
+            });
+
+            var newPoint = prevPoint+vector;
+            
+            var iSubDivs = Math.round(vector.length / subStepLength);
+            
+            for(var iSub=1; iSub<iSubDivs; iSub++)
+            {
+                var subVector = new Point({
+                    angle: vector.angle,
+                    length: iSub*vector.length/iSubDivs
+                });
+                
+                var color = raster.getAverageColor(prevPoint+subVector);
+                var value = color ? (1 - color.gray) : 0;
+                var offset = Math.max(value, 0.1);
+                
+                var offsetVector = new Point({
+                    angle: vector.angle+90,
+                    length: maxWidth/2 * offset
+                }); 
+                
+                path1.add(prevPoint+subVector-offsetVector);
+                path2.add(prevPoint+subVector+offsetVector);
+            }
+            
+            var color = raster.getAverageColor(newPoint);
+            var value = color ? (1 - color.gray) : 0;
+            var offset = Math.max(value, 0.1);
+            
+            var offsetVector = null
+            
+            if(i==iN*4)
+            {
+                offsetVector = new Point({
+                    angle: vector.angle+90,
+                    length: (maxWidth/2 * offset)
+                });
+            }
+            else
+            {
+                offsetVector = new Point({
+                    angle: vector.angle+90+45,
+                    length: (maxWidth/2 * offset)*sqrt2
+                });
+            }
+            
+            path1.add(newPoint-offsetVector);
+            path2.add(newPoint+offsetVector);
+            
+            path1.smooth();
+            path2.smooth();
+
+            aPath1.push(path1);
+            aPath2.push(path2);
+            
+            path1 = new Path();
+            path2 = new Path();
+            
+            path1.add(newPoint-offsetVector);
+            path2.add(newPoint+offsetVector);
+            
+            prevPoint = newPoint;
+        }
+        
+        var fullPath1 = aPath1[0];
+        var fullPath2 = aPath2[0];
+        
+        for(var i=1; i<aPath1.length; i++)
+        {
+            if((fullPath1.segments.length+fullPath2.segments.length+aPath1[i].segments.length+aPath2[i].segments.length)>32000)
+            {
+                fullPath2.reverse();
+                fullPath1.join(fullPath2);
+                fullPath1.closed = true;
+                grSpirTrace.addChild(fullPath1);
+                
+                fullPath1 = aPath1[i];
+                fullPath2 = aPath2[i];
+
+                continue;
+            }
+
+            fullPath1.join(aPath1[i]);
+            fullPath2.join(aPath2[i]);
+        }
+        
+        fullPath2.reverse();
+        
+        fullPath1.join(fullPath2);
+        
+        fullPath1.closed = true;
+        
+        grSpirTrace.addChild(fullPath1);
+        
+        grSpirTrace.fillColor = 'black';
+    }
+    
+    function tracePL()
+    {
+        if(grSpirTrace)grSpirTrace.remove();
+        grSpirTrace = new Group();
+        
+        var currAngle = (ptSpirCenter-ptPLHalfWidth).angle;
+        
+        var plStep = (ptSpirCenter-ptPLStep).length / 5.;
+        var plSubStep = (ptPLHalfHeight-ptPLSubStep).length / 5.;
+        var plHalfH = (ptSpirCenter-ptPLHalfHeight).length;
+        var plHalfW = (ptSpirCenter-ptPLHalfWidth).length;
+        
+        var nHalfLines = Math.round(plHalfH/plStep);
+        var nHalfSubStep = Math.round(plHalfW/plSubStep);
+        
+        var maxWidth = (plHalfH*0.9)/(nHalfLines);
+        
+        for(var iLine=-nHalfLines; iLine<=nHalfLines; iLine++)
+        {
+            var offset1 = iLine*plHalfH/nHalfLines;
+            var offAng1 = 90;
+            if(iLine<0)
+                offAng1 = -90;
+            
+            var ptFirst = ptSpirCenter + new Point({angle: currAngle+offAng1, length: offset1});
+
+            var tempPath1 = new Path();
+            var tempPath2 = new Path();
+
+            for(var iSubLine=-nHalfSubStep; iSubLine<=nHalfSubStep; iSubLine++)
+            {
+                var offset2 = iSubLine*plHalfW/nHalfSubStep;
+                var offAng2 = 0;
+                if(iSubLine<0)
+                    offAng2 = 180;
+                
+                var ptCatch = ptFirst + new Point({angle: currAngle+offAng2, length: offset2});
+                
+                var color = raster.getAverageColor(ptCatch);
+                var value = color ? (1 - color.gray) : 0;
+                var offset = Math.max(value, 0.1)*maxWidth/2;
+                
+                tempPath1.add(ptCatch + new Point({angle: currAngle+90, length: offset}));
+                tempPath2.add(ptCatch + new Point({angle: currAngle-90, length: offset}));
+                
+            }
+            
+            tempPath1.smooth();
+            tempPath2.smooth();
+            
+            tempPath2.reverse();
+            
+            tempPath1.join(tempPath2);
+            
+            tempPath1.closed = true;
+            
+            grSpirTrace.addChild(tempPath1); 
+        }
+        
+        grSpirTrace.fillColor = 'black';
+    }
+    
+    function createSpir()
+    {
+        layerBG.activate();
+        
+        if(gSpirType == 0)
+        {
+            createRoundSpir();
+        }
+        
+        if(gSpirType == 1)
+        {
+            createRectSpir();
+        }
+        
+        if(gSpirType == 2)
+        {
+            createPL();
+        } 
+    }
+    
+    function createLines()
+    {
+        layerBG.activate();
+        
+        if(gSpirType == 0)
+        {
+            createRoundLines(); 
+        }
+        
+        if(gSpirType == 1)
+        {
+            createRectLines();
+        }
+        
+        if(gSpirType == 2)
+        {
+            createPLLines();
+        } 
+        
+    }
+    
+    function createRoundSpir()
+    {
+        if(grSpir)grSpir.remove();
+        
+        var iLength = (ptSpirCenter - ptSpirStep).length / 5.; 
+        
+        grSpir = new Group();
+        
+        var itemSpir = new Path();
+        itemSpir.strokeColor = 'grey';
+        
+        var angle = 90;
+
+        var delta = ptSpirEnd - ptSpirCenter;
+        
+        var iN = Math.round(delta.length/iLength);
+        
+        itemSpir.strokeWidth = 1;
+        
+        var iAngles = 360./angle;
+        
+        {
+            var newPoint = ptSpirCenter;
+            
+            var hIn = null;
+            var hOut = new Point({
+                angle: 0 + delta.angle,
+                length: (((0+1)*delta.length)/(iAngles*iN))*0.55
+            });
+            
+            var newSegment = new Segment(newPoint, hIn, hOut);
+            
+            itemSpir.add(newSegment); 
+        }
+        
+        for(var i=1; i<iN*iAngles+1; i++)
+        { 
+            var vector = new Point({
+                angle: i*angle + delta.angle,
+                length: (i*delta.length)/(iAngles*iN)
+            });
+
+            var newPoint = ptSpirCenter+vector;
+            
+            
+            var nextPointDX = new Point({
+                angle: (i*10+1)*(angle/10.) + delta.angle,
+                length: ((i*10+1)*delta.length)/(iAngles*10.*iN)
+            });
+            var prevPointDX = new Point({
+                angle: (i*10-1)*(angle/10.) + delta.angle,
+                length: ((i*10-1)*delta.length)/(iAngles*10.*iN)
+            }); 
+            
+            
+            var hIn = prevPointDX - nextPointDX;
+            hIn.length=(((i)*delta.length)/(iAngles*iN))*0.55;
+            
+            var hOut = nextPointDX - prevPointDX;
+            hOut.length=(((i+1)*delta.length)/(iAngles*iN))*0.55;
+            
+            var newSegment = new Segment(newPoint, hIn, hOut);
+            
+            itemSpir.add(newSegment);
+        }
+        
+        grSpir.addChild(itemSpir);
+    }
+    
+    function createRoundLines()
+    {
+        if(grLines)grLines.remove();
+        
+        var delta = ptSpirEnd - ptSpirCenter;
+        
+        grLines = new Group();
+        
+        for(var i=0; i<360./gAngle; i++)
+        {
+            var ptEnd = new Point({
+                angle: -i*gAngle + delta.angle,
+                length: delta.length
+            });
+            var tempPath = new Path.Line(ptSpirCenter, ptSpirCenter+ptEnd);
+            tempPath.strokeColor = 'grey';
+
+            grLines.addChild(tempPath);
+        }
+    }
+    
+    function createRectSpir()
+    {
+        if(grSpir)grSpir.remove();
+        
+        var iLength = (ptSpirCenter - ptSpirStep).length / (sqrt2 * 5.); 
+        
+        grSpir = new Group();
+        
+        var itemSpir = new Path();
+        itemSpir.strokeColor = 'grey';
+        
+        var angle = 90;
+
+        var delta = ptSpirEnd - ptSpirCenter;
+        
+        var iN = Math.round(delta.length/(sqrt2*iLength));
+        
+        itemSpir.strokeWidth = 1;
+        
+        itemSpir.add(new Segment(ptSpirCenter));
+        var prevPoint = ptSpirCenter;
+        
+        for(var i=1; i<iN*4+1; i++)
+        { 
+            var vector = new Point({
+                angle: i*90+90 + delta.angle-45,
+                length: i*delta.length/(sqrt2*2.*iN)
+            });
+
+            var newPoint = prevPoint+vector;
+            
+            itemSpir.add(new Segment(newPoint));
+            
+            prevPoint = newPoint;
+        }
+        
+        grSpir.addChild(itemSpir);
+    } 
+    
+    function createRectLines()
+    {
+        if(grLines)grLines.remove();
+        
+        var delta = ptSpirEnd - ptSpirCenter;
+        
+        grLines = new Group();
+        
+        var subStep = (ptSpirEnd - ptSpirSubStep).length / 5;
+        var sideSize = sqrt2*delta.length;
+        
+        var iN = Math.round(sideSize/subStep);
+        
+        for(var i=0; i<=iN; i++)
+        {
+            var ptStart = ptSpirEnd + new Point({
+                angle: delta.angle-45-90,
+                length: i*sideSize/iN
+            });
+            var ptEnd = ptStart + new Point({angle: delta.angle-45, length: 10}); 
+            
+            var tempPath = new Path.Line(ptStart, ptEnd);
+            tempPath.strokeColor = 'grey';
+
+            grLines.addChild(tempPath);
+        }
+    }
+    
+    function createPL()
+    {
+        if(grSpir)grSpir.remove();
+        grSpir = new Group();
+        
+        var currAngle = (ptSpirCenter-ptPLHalfWidth).angle;
+        
+        var plStep = (ptSpirCenter-ptPLStep).length / 5.;
+        var plHalfH = (ptSpirCenter-ptPLHalfHeight).length;
+        var plHalfW = (ptSpirCenter-ptPLHalfWidth).length;
+        
+        var nHalfLines = Math.round(plHalfH/plStep);
+        
+        for(var iLine=-nHalfLines; iLine<=nHalfLines; iLine++)
+        {
+            var offset = iLine*plHalfH/nHalfLines;
+            var offAng = 90;
+            if(iLine<0)
+                offAng = -90;
+            
+            var ptStart = ptSpirCenter + new Point({angle: currAngle+180, length: plHalfW}) + new Point({angle: currAngle+offAng, length: offset});
+            var ptEnd = ptSpirCenter + new Point({angle: currAngle, length: plHalfW}) + new Point({angle: currAngle+offAng, length: offset});
+            
+            var tempPath = new Path.Line(ptStart, ptEnd);
+            tempPath.strokeColor = 'grey';
+
+            grSpir.addChild(tempPath); 
+        }
+    }
+    
+    function createPLLines()
+    {
+        if(grLines)grLines.remove();
+        grLines = new Group();
+        
+        var currAngle = (ptSpirCenter-ptPLHalfWidth).angle;
+        var plSubStep = (ptPLHalfHeight-ptPLSubStep).length / 5.;
+        var plHalfH = (ptSpirCenter-ptPLHalfHeight).length;
+        var plHalfW = (ptSpirCenter-ptPLHalfWidth).length; 
+        
+        var nHalfSubStep = Math.round(plHalfW/plSubStep);
+        
+        var ptFirst = ptSpirCenter + new Point({angle: currAngle+90, length: plHalfH});
+        for(var iLine=-nHalfSubStep; iLine<=nHalfSubStep; iLine++)
+        {
+            var offset = iLine*plHalfW/nHalfSubStep;
+            var offAng = 0;
+            if(iLine<0)
+                offAng = 180;
+            
+            var ptStart = ptFirst + new Point({angle: currAngle+offAng, length: offset});
+            
+            var ptEnd = ptStart + new Point({angle: currAngle+90, length: 10}); 
+            
+            var tempPath = new Path.Line(ptStart, ptEnd);
+            tempPath.strokeColor = 'grey';
+            
+            grLines.addChild(tempPath); 
+        }
+    } 
+    
+    function visAnchors()
+    {
+        if(gSpirType==0)
+        {
+            anchSpirEnd.visible = true;
+            anchSpirStep.visible = true;
+            anchSpirSubStep.visible = false;
+            anchSpirAngle.visible = true;
+            
+            anchPLHalfWidth.visible = false;
+            anchPLHalfHeight.visible = false;
+            anchPLStep.visible = false;
+            anchPLSubStep.visible = false;
+        }
+        
+        if(gSpirType==1)
+        {
+            anchSpirEnd.visible = true;
+            anchSpirStep.visible = true;
+            anchSpirSubStep.visible = true;
+            anchSpirAngle.visible = false;
+            
+            anchPLHalfWidth.visible = false;
+            anchPLHalfHeight.visible = false;
+            anchPLStep.visible = false;
+            anchPLSubStep.visible = false; 
+        }
+        
+        if(gSpirType==2)
+        {
+            anchSpirEnd.visible = false;
+            anchSpirStep.visible = false;
+            anchSpirSubStep.visible = false;
+            anchSpirAngle.visible = false; 
+            
+            anchPLHalfWidth.visible = true;
+            anchPLHalfHeight.visible = true;
+            anchPLStep.visible = true;
+            anchPLSubStep.visible = true; 
+        }
+    }
+    
+    document.getElementById("tracebutton").onclick = function()
+    { 
+        if(grSpirTrace)
+        {
+            grSpirTrace.remove();
+            grSpirTrace = null;
+            
+            layerTrace.remove();
+            layerTrace = null;
+            
+            layerBG.visible = true;
+            layerAnchors.visible = true;
+
+            visAnchors();
+            
+            createSpir();
+            createLines();
+
+            document.getElementById("svgexpbutton").style.display="none";
+            document.getElementById("tracebutton").textContent = 'Traccia Immagine';
+        }
+        else
+        {
+            traceSpir();
+
+            layerBG.visible = false;
+            layerAnchors.visible = false;
+            
+            document.getElementById("svgexpbutton").style.display="inline";
+            document.getElementById("tracebutton").textContent = 'Annulla';
+        }
+        
+    }
+    
+    document.getElementById("svgexpbutton").onclick = function()
+    {
+        if(grSpirTrace)
+        {
+            var svgPrefix = '<svg x="0" y="0" width="800" height="800" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">';
+            var svgPostfix = '</svg>';
+            var svg = svgPrefix + grSpirTrace.exportSVG({ asString: true }) + svgPostfix;
+            
+            // Download diretto del file SVG
+            var blob = new Blob([svg], {type: 'image/svg+xml'});
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = 'spiral-export.svg';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    };
+
+    document.getElementById("spirtype0").onclick = function()
+    {
+        gSpirType = 0;
+        if(!grSpirTrace)
+        {
+            visAnchors();
+            createSpir();
+            createLines();
+        } 
+    };
+    
+    document.getElementById("spirtype1").onclick = function()
+    {
+        gSpirType = 1;
+        if(!grSpirTrace)
+        {
+            visAnchors();
+            createSpir();
+            createLines();
+        }
+    };
+
+    document.getElementById("spirtype2").onclick = function()
+    {
+        gSpirType = 2;
+        if(!grSpirTrace)
+        {
+            visAnchors();
+            createSpir();
+            createLines();
+        } 
+    }; 
+    
+    var holder = document.getElementById('canvas');
+    holder.ondragover = function () { return false; };
+    holder.ondragend = function () { return false; };
+    holder.ondrop = function (event)
+    {
+        event.preventDefault();
+
+        if(grSpirTrace == null)
+        {
+            var file = event.dataTransfer.files[0];
+            var reader = new FileReader();
+
+            reader.onload = function ( event ) {
+                var image = document.createElement('img');
+                image.onload = function () {
+                    raster.remove();
+                    raster = new Raster(image);
+                    raster.fitBounds(view.bounds);
+                    raster.sendToBack();
+                    if(rectRaster)rectRaster.remove();
+                    rectRaster = new Path.Rectangle(raster.bounds);
+                    rectRaster.fillColor = '#E0E0E0';
+                    rectRaster.sendToBack();
+                    rectRaster.visible = false;
+
+                    document.getElementById("tracebutton").style.display="inline";
+                };
+                image.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+            
+            if(raster == null)
+            {
+                document.getElementById("tracebutton").style.display="none";
+                
+                raster = new Raster('filedrop');
+                raster.position = view.center;
+
+                rectRaster = new Path.Rectangle(raster.bounds);
+                rectRaster.fillColor = '#E0E0E0';
+                rectRaster.sendToBack(); 
+            }
+        }
+    };
+    
+    </script>
+</body>
+
+</html>
